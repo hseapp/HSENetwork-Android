@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -38,6 +39,11 @@ abstract class Request<T>(private val url: String) {
     private suspend fun runInternal(): T? = suspendCancellableCoroutine { c ->
         if (attempts == MAX_REQUEST_ATTEMPTS) {
             e(url, "Max attempts reached. Request cancelled.")
+            c.resume(null)
+            return@suspendCancellableCoroutine
+        }
+        if (requests.contains(hashCode())) {
+            while (requests.contains(hashCode())) { }
             c.resume(null)
             return@suspendCancellableCoroutine
         }
@@ -72,6 +78,7 @@ abstract class Request<T>(private val url: String) {
                         info: UrlResponseInfo?,
                         error: CronetException?
                     ) {
+                        requests.remove(this@Request.hashCode())
                         if (error != null) {
                             c.resumeWithException(error)
                         } else {
@@ -102,9 +109,10 @@ abstract class Request<T>(private val url: String) {
                             } catch (e: Throwable) {
                                 // not a json object
                             }
-
+                            requests.remove(this@Request.hashCode())
                             c.resume(parse(response))
                         } catch (e: Throwable) {
+                            requests.remove(this@Request.hashCode())
                             c.resumeWithException(e)
                         }
                     }
@@ -156,10 +164,13 @@ abstract class Request<T>(private val url: String) {
             }
         }
 
+        requests[this@Request.hashCode()] = this
+
         urlRequest = builder.build()
         urlRequest.start()
 
         c.invokeOnCancellation {
+            requests.remove(this@Request.hashCode())
             urlRequest?.cancel()
         }
     }
@@ -171,6 +182,8 @@ abstract class Request<T>(private val url: String) {
         return "$url $params"
     }
 
+    override fun hashCode() = url.hashCode() + params.hashCode() + bodyParams.hashCode()
+
     companion object {
         enum class Method {
             GET,
@@ -180,6 +193,7 @@ abstract class Request<T>(private val url: String) {
         }
 
         const val MAX_REQUEST_ATTEMPTS = 3
+        private val requests = ConcurrentHashMap<Int, Request<*>>()
     }
 
 }

@@ -3,6 +3,7 @@ package com.hse.network
 import android.content.Context
 import android.os.Build
 import org.chromium.net.CronetEngine
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import javax.inject.Inject
