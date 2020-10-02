@@ -1,14 +1,12 @@
 package com.hse.network
 
-
-import com.hse.log.e
-import com.hse.log.i
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.chromium.net.CronetException
 import org.chromium.net.UploadDataProviders
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import org.json.JSONObject
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
@@ -38,7 +36,7 @@ abstract class Request<T>(private val url: String) {
 
     private suspend fun runInternal(): T? = suspendCancellableCoroutine { c ->
         if (attempts == MAX_REQUEST_ATTEMPTS) {
-            e(url, "Max attempts reached. Request cancelled.")
+            Timber.e("%s Max attempts reached. Request cancelled.", url)
             c.resume(null)
             return@suspendCancellableCoroutine
         }
@@ -90,8 +88,8 @@ abstract class Request<T>(private val url: String) {
                         try {
                             bytesReceived.close()
                             val response = bytesReceived.toByteArray().toString(Charsets.UTF_8)
-                            i("Request: $finalUrl")
-                            i("Response: $response")
+                            Timber.i("Request: $finalUrl")
+                            Timber.i("Response: $response")
                             bytesReceived.reset()
 
                             try {
@@ -130,8 +128,8 @@ abstract class Request<T>(private val url: String) {
             )
 
 
-        i("Params", params.toString())
-        i("BodyParams", bodyParams.toString())
+        Timber.i("Params: %s", params.toString())
+        Timber.i("BodyParams %s", bodyParams.toString())
         builder.setHttpMethod(method.name)
 
         fun addData(params: Params) {

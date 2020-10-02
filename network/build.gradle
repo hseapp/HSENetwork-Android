@@ -34,14 +34,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.3.0'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3"
+    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.6"
     implementation "com.google.android.gms:play-services-cronet:17.0.0"
     implementation "com.google.dagger:dagger-android:2.24"
     implementation "com.google.dagger:dagger-android-support:2.24"
+    implementation 'com.jakewharton.timber:timber:4.7.1'
     kapt "com.google.dagger:dagger-android-processor:2.20"
-    kapt "com.google.dagger:dagger-compiler:2.24"
-//    implementation project(path: ':log')
+    kapt "com.google.dagger:dagger-compiler:2.28"
 }
