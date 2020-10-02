@@ -95,13 +95,7 @@ abstract class Request<T>(private val url: String) {
                             try {
                                 val json = JSONObject(response)
                                 if (json.has("error")) {
-                                    val error = json.optJSONObject("error")
-                                    val throwable = RequestException(
-                                        error.optString("name"),
-                                        error.optInt("status"),
-                                        error.optString("message")
-                                    )
-                                    c.resumeWithException(throwable)
+                                    c.resumeWithException(RequestException.parse(json.optJSONObject("error")))
                                     return
                                 }
                             } catch (e: Throwable) {
