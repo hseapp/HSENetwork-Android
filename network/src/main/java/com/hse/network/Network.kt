@@ -10,6 +10,7 @@ import javax.inject.Inject
 interface Network {
     fun getCronetEngine(): CronetEngine
     fun getExecutor(): ScheduledExecutorService
+    fun getAppContext(): Context
 }
 
 class NetworkImpl @Inject constructor(private val context: Context) : Network {
@@ -19,6 +20,7 @@ class NetworkImpl @Inject constructor(private val context: Context) : Network {
 
     override fun getCronetEngine() = cronet!!
     override fun getExecutor() = executor
+    override fun getAppContext() = context.applicationContext
 
     init {
         val packageManager = context.packageManager
