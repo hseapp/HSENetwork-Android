@@ -28,6 +28,10 @@ abstract class Request<T>(private val url: String) {
 
     abstract fun parse(response: String): T
 
+    init {
+       id++
+    }
+
     @Throws(Throwable::class)
     suspend fun run(network: Network): T? {
         this.network = network
@@ -88,8 +92,7 @@ abstract class Request<T>(private val url: String) {
                         try {
                             bytesReceived.close()
                             val response = bytesReceived.toByteArray().toString(Charsets.UTF_8)
-                            Timber.i("Request: $finalUrl")
-                            Timber.i("Response: $response")
+                            Timber.i("Response ID=$id $response")
                             bytesReceived.reset()
 
                             try {
@@ -121,9 +124,7 @@ abstract class Request<T>(private val url: String) {
                 network.getExecutor()
             )
 
-
-        Timber.i("Params: %s", params.toString())
-        Timber.i("BodyParams %s", bodyParams.toString())
+        Timber.i("Request ID=$id $finalUrl\nParams: $params\nBody: $bodyParams")
         builder.setHttpMethod(method.name)
 
         fun addData(params: Params) {
@@ -186,6 +187,7 @@ abstract class Request<T>(private val url: String) {
 
         const val MAX_REQUEST_ATTEMPTS = 3
         private val requests = ConcurrentHashMap<Int, Request<*>>()
+        private @Volatile var id = 0L
     }
 
 }
