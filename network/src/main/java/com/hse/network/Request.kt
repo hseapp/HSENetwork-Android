@@ -168,8 +168,8 @@ abstract class Request<T>(private val url: String) {
         }
     }
 
-    private fun isParamsForUrl() =
-        method == Method.GET || method == Method.DELETE || method == Method.PUT
+    private fun isParamsForUrl() = !params.isEmpty() &&
+            (method == Method.GET || method == Method.DELETE || method == Method.PUT)
 
     override fun toString(): String {
         return "$url $params"
