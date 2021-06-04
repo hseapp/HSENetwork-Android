@@ -1,7 +1,5 @@
 package com.hse.network
 
-import android.os.Build
-import androidx.core.os.BuildCompat
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.chromium.net.CronetException
 import org.chromium.net.UploadDataProviders
@@ -17,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-abstract class Request<T>(private val url: String, private val versionCode: Int? = null) {
+abstract class Request<T>(private val url: String) {
     var method = Method.GET
     val params = Params()
     val bodyParams = Params()
@@ -31,7 +29,7 @@ abstract class Request<T>(private val url: String, private val versionCode: Int?
     abstract fun parse(response: String): T
 
     init {
-        id++
+       id++
     }
 
     @Throws(Throwable::class)
@@ -47,8 +45,7 @@ abstract class Request<T>(private val url: String, private val versionCode: Int?
             return@suspendCancellableCoroutine
         }
         if (requests.contains(hashCode())) {
-            while (requests.contains(hashCode())) {
-            }
+            while (requests.contains(hashCode())) { }
             c.resume(null)
             return@suspendCancellableCoroutine
         }
@@ -101,13 +98,7 @@ abstract class Request<T>(private val url: String, private val versionCode: Int?
                             try {
                                 val json = JSONObject(response)
                                 if (json.has("error")) {
-                                    c.resumeWithException(
-                                        RequestException.parse(
-                                            json.optJSONObject(
-                                                "error"
-                                            )
-                                        )
-                                    )
+                                    c.resumeWithException(RequestException.parse(json.optJSONObject("error")))
                                     return
                                 }
                             } catch (e: Throwable) {
@@ -140,9 +131,6 @@ abstract class Request<T>(private val url: String, private val versionCode: Int?
             builder.apply {
                 addHeader("Content-Type", "application/json")
                 addHeader("Accept-Language", Locale.getDefault().toLanguageTag())
-                versionCode?.let {
-                    addHeader("x-android-build", it.toString())
-                }
                 if (!params.isEmpty()) {
                     try {
                         setUploadDataProvider(
@@ -199,9 +187,7 @@ abstract class Request<T>(private val url: String, private val versionCode: Int?
 
         const val MAX_REQUEST_ATTEMPTS = 3
         private val requests = ConcurrentHashMap<Int, Request<*>>()
-
-        private @Volatile
-        var id = 0L
+        private @Volatile var id = 0L
     }
 
 }
