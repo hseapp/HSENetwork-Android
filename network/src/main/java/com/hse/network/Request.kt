@@ -182,8 +182,7 @@ abstract class Request<T>(private val url: String) {
             GET,
             POST,
             DELETE,
-            PUT,
-            HEAD
+            PUT
         }
 
         const val MAX_REQUEST_ATTEMPTS = 3
