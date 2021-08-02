@@ -188,7 +188,8 @@ abstract class Request<T>(private val url: String) {
 
         const val MAX_REQUEST_ATTEMPTS = 3
         private val requests = ConcurrentHashMap<Int, Request<*>>()
-        private @Volatile var id = 0L
+        @Volatile
+        private var id = 0L
     }
 
 }
