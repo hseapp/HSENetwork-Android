@@ -1,8 +1,0 @@
-before_install:
-   - sdk install java 11.0.10-open
-   - sdk use java 11.0.10-open
-jdk:
-   - openjdk:11-jdk
-
-build:
-   image: openjdk:11-jdk
