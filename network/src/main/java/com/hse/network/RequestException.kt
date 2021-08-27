@@ -2,7 +2,7 @@ package com.hse.network
 
 import org.json.JSONObject
 
-class RequestException(val name: String, val status: Int, message: String, messageRu: String? = null, messageEn: String? = null) : Throwable(message) {
+class RequestException(val name: String, val status: Int, message: String, val messageRu: String? = null, val messageEn: String? = null) : Throwable(message) {
 
     companion object {
         fun parse(json: JSONObject?): RequestException {
