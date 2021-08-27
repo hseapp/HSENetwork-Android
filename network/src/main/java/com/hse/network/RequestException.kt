@@ -2,7 +2,7 @@ package com.hse.network
 
 import org.json.JSONObject
 
-class RequestException(val name: String, val status: Int, message: String) : Throwable(message) {
+class RequestException(val name: String, val status: Int, message: String, messageRu: String? = null, messageEn: String? = null) : Throwable(message) {
 
     companion object {
         fun parse(json: JSONObject?): RequestException {
@@ -11,10 +11,16 @@ class RequestException(val name: String, val status: Int, message: String) : Thr
                 json.optJSONObject("error") ?: return defaultException()
             } else json
 
+            val (ru, en) = errorJson.optJSONObject("e")?.optJSONObject("message")?.run {
+                this.optString("ru") to this.optString("en")
+            } ?: null to null
+
             return RequestException(
                 errorJson.optString("name"),
                 errorJson.optInt("status"),
-                errorJson.optString("message")
+                errorJson.optString("message"),
+                ru,
+                en
             )
         }
 
