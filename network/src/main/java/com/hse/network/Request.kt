@@ -29,7 +29,7 @@ abstract class Request<T>(private val url: String) {
     abstract fun parse(response: String): T
 
     init {
-       id++
+        id++
     }
 
     @Throws(Throwable::class)
@@ -45,7 +45,8 @@ abstract class Request<T>(private val url: String) {
             return@suspendCancellableCoroutine
         }
         if (requests.contains(hashCode())) {
-            while (requests.contains(hashCode())) { }
+            while (requests.contains(hashCode())) {
+            }
             c.resume(null)
             return@suspendCancellableCoroutine
         }
@@ -90,22 +91,30 @@ abstract class Request<T>(private val url: String) {
 
                     override fun onSucceeded(request: UrlRequest?, info: UrlResponseInfo?) {
                         try {
-                            bytesReceived.close()
-                            val response = bytesReceived.toByteArray().toString(Charsets.UTF_8)
-                            Timber.i("Response ID=$id $response")
-                            bytesReceived.reset()
+                            when (info?.httpStatusCode) {
+                                in 200..299 -> {
+                                    bytesReceived.close()
+                                    val response =
+                                        bytesReceived.toByteArray().toString(Charsets.UTF_8)
+                                    Timber.i("Response ID=$id $response")
+                                    bytesReceived.reset()
 
-                            try {
-                                val json = JSONObject(response)
-                                if (json.has("error")) {
-                                    c.resumeWithException(RequestException.parse(json.optJSONObject("error")))
-                                    return
+                                    try {
+                                        val json = JSONObject(response)
+                                        if (json.has("error")) {
+                                            c.resumeWithException(
+                                                RequestException.parse(json.optJSONObject("error"))
+                                            )
+                                            return
+                                        }
+                                    } catch (e: Throwable) {
+                                        // not a json object
+                                    }
+                                    requests.remove(this@Request.hashCode())
+                                    c.resume(parse(response))
                                 }
-                            } catch (e: Throwable) {
-                                // not a json object
+                                else -> c.resumeWithException(java.lang.Exception("HTTP ERROR CODE: " + info?.httpStatusCode.toString()))
                             }
-                            requests.remove(this@Request.hashCode())
-                            c.resume(parse(response))
                         } catch (e: Throwable) {
                             requests.remove(this@Request.hashCode())
                             c.resumeWithException(e)
@@ -188,7 +197,9 @@ abstract class Request<T>(private val url: String) {
 
         const val MAX_REQUEST_ATTEMPTS = 3
         private val requests = ConcurrentHashMap<Int, Request<*>>()
-        private @Volatile var id = 0L
+
+        private @Volatile
+        var id = 0L
     }
 
 }
