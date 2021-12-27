@@ -91,14 +91,14 @@ abstract class Request<T>(private val url: String) {
 
                     override fun onSucceeded(request: UrlRequest?, info: UrlResponseInfo?) {
                         try {
+                            bytesReceived.close()
+                            val response =
+                                bytesReceived.toByteArray().toString(Charsets.UTF_8)
+                            Timber.i("Response ID=$id $response")
+                            bytesReceived.reset()
+
                             when (info?.httpStatusCode) {
                                 in 200..299 -> {
-                                    bytesReceived.close()
-                                    val response =
-                                        bytesReceived.toByteArray().toString(Charsets.UTF_8)
-                                    Timber.i("Response ID=$id $response")
-                                    bytesReceived.reset()
-
                                     try {
                                         val json = JSONObject(response)
                                         if (json.has("error")) {
@@ -113,7 +113,7 @@ abstract class Request<T>(private val url: String) {
                                     requests.remove(this@Request.hashCode())
                                     c.resume(parse(response))
                                 }
-                                else -> c.resumeWithException(java.lang.Exception("HTTP ERROR CODE: " + info?.httpStatusCode.toString()))
+                                else -> c.resumeWithException(java.lang.Exception("HTTP ERROR CODE: " + info?.httpStatusCode.toString() + "\n Response: "+response))
                             }
                         } catch (e: Throwable) {
                             requests.remove(this@Request.hashCode())
