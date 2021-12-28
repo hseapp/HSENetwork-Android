@@ -98,7 +98,7 @@ abstract class Request<T>(private val url: String) {
                             bytesReceived.reset()
 
                             when (info?.httpStatusCode) {
-                                in 200..299, in 401..403 -> {
+                                in 200..299, in 400..499 -> {
                                     try {
                                         val json = JSONObject(response)
                                         if (json.has("error")) {
@@ -106,6 +106,11 @@ abstract class Request<T>(private val url: String) {
                                                 RequestException.parse(json.optJSONObject("error"))
                                             )
                                             return
+                                        } else {
+                                            if (info?.httpStatusCode in 400..499) {
+                                                c.resumeWithException(java.lang.Exception("HTTP ERROR CODE: " + info?.httpStatusCode.toString()))
+                                                return
+                                            }
                                         }
                                     } catch (e: Throwable) {
                                         // not a json object
@@ -113,7 +118,7 @@ abstract class Request<T>(private val url: String) {
                                     requests.remove(this@Request.hashCode())
                                     c.resume(parse(response))
                                 }
-                                else -> c.resumeWithException(java.lang.Exception("HTTP ERROR CODE: " + info?.httpStatusCode.toString() + "\n Response: "+response))
+                                else -> c.resumeWithException(java.lang.Exception("HTTP ERROR CODE: " + info?.httpStatusCode.toString() + "\n Response: " + response))
                             }
                         } catch (e: Throwable) {
                             requests.remove(this@Request.hashCode())
