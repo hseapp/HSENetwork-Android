@@ -98,7 +98,7 @@ abstract class Request<T>(private val url: String) {
                             bytesReceived.reset()
 
                             when (info?.httpStatusCode) {
-                                in 200..299 -> {
+                                in 200..299, in 401..403 -> {
                                     try {
                                         val json = JSONObject(response)
                                         if (json.has("error")) {
